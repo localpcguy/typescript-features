@@ -18,6 +18,7 @@ the lead architect for the development of Typescript.
 - Guard rails
 - Future of Javascript today
 - Detect errors during development time
+- Detect errors even in Javascript files without types
 - Intellisense
 - Better tooling
 
@@ -35,14 +36,26 @@ that point it is likely to be accepted into the Javascript language and implemen
 Typescript provides static typing through type annotations to enable type checking at compile time. This is optional and 
 can be ignored to use the regular dynamic typing of Javascript.
 
- - The annotations for the primitive types are `number`, `boolean` and `string`. 
+Type errors do not prevent JavaScript from being emitted (unless you tell it to).
+
+ - The annotations for the primitive types are `number`, `boolean`, `string`, `undefined`, `null` and `symbol`. 
  - Arrays are denoted by putting the type and `[]` - i.e. `number[]`.
  - Weakly- or dynamically-typed structures are of type `any`.
  - `void` is the opposite of any, it is the absense of type. Variables assigned as void can only have `undefined` or `null` assigned to them.
- - `null` and `undefined` are types as well.
 
-  let x: number = 4;
-  let list: number[] = [1, 2, 3];
+```
+let x: number = 4;
+let list: number[] = [1, 2, 3];
+```
+
+### Tuples
+Tuple types allow you to express an array where the type of a fixed number of elements is known, but need not be the same.
+
+```
+let x: [string, number];
+x = ["hello", 10]; // OK
+x = [10, "hello"]; // Error
+```
 
 ### Type inference
 The Typescript compiler makes use of type inference to infer types when types are not given. I.E. an `add` function that takes 
@@ -51,10 +64,12 @@ require explicity declaring a function return type for the Typescript compiler t
 
 Types that cannot be inferred default to `any`.
 
-  let x = 3; // x will be inferred to be of type `number`
+```
+let x = 3; // x will be inferred to be of type `number`
 
-  function add(a: number, b: number) { return a + b }
-  function add(a: number, b: number): number { return a + b }
+function add(a: number, b: number) { return a + b }
+function add(a: number, b: number): number { return a + b }
+```
 
 ### Type erasure
 Typescript removes all type references from TS files when transpiling to Javascript. 
@@ -64,31 +79,37 @@ Type compatibility in TypeScript is based on structural subtyping. Structural ty
 based solely on their members. The basic rule for TypeScript’s structural type system is that x is compatible 
 with y if y has at least the same members as x.
 
-  interface Named {
-    name: string
-  }
+```
+interface Named {
+  name: string
+}
 
-  class Person {
-    name: string
-  }
+class Person {
+  name: string
+}
 
-  let p: Named;
-  // OK, because of structural typing
-  p = new Person()
+let p: Named;
+// OK, because of structural typing
+p = new Person()
+```
 
 ### Type assertions
 Type assertions are a way to tell the compiler “trust me, I know what I’m doing.” A type assertion is like a type cast in other languages, but performs no special checking or restructuring of data. It has no runtime impact, and is used purely by the compiler.
 
-  let strLength: number = (<string>someValue).length;
-  let strLength: number = (someValue as string).length;
+```
+let strLength: number = (<string>someValue).length;
+let strLength: number = (someValue as string).length;
+```
 
 ### Union Types
 Typescript allows multiple types to be set to a variable, meaning a variable can be any one of the associated types. This 
 should be used with caution as it reduces type safety.
 
-  let x: number | string
-  x = 4 // OK
-  x = 'test' // OK
+```
+let x: number | string
+x = 4 // OK
+x = 'test' // OK
+```
 
 ### Intersection Types
 An intersection type combines multiple types into one. This allows composing multiple types to get a single type 
@@ -100,8 +121,10 @@ Type aliases create a new name for a type. Type aliases are sometimes similar to
 
 Most useful for defining types for union types or method signatures
 
-  type NameResolver = () => string;
-  type NameOrResolver = Name | NameResolver;
+```
+type NameResolver = () => string;
+type NameOrResolver = Name | NameResolver;
+```
 
 ### Other advanced types
 https://www.typescriptlang.org/docs/handbook/advanced-types.html
@@ -114,98 +137,104 @@ Interfaces describe the shape of an object. You can use an interface as the type
 Optional values allow the use of "possibly" available properties while still preventing the use of properties that are
 not part of the interface. Readonly properties can only be modified when the object is created.
 
-  interface LabeledValue {
-    label: string
-    width?: number
-    readonly id: number
-    [propName: string]: any; // allow any number of additional properties, not good practice
-  }
+```
+interface LabeledValue {
+  label: string
+  width?: number
+  readonly id: number
+  [propName: string]: any; // allow any number of additional properties, not good practice
+}
+```
 
 Functions can be defined in interfaces via the call signature.
 
-  interface SearchFunc {
-    (source: string, subString: string): boolean
-  }
+```
+interface SearchFunc {
+  (source: string, subString: string): boolean
+}
+```
 
 Similarly, indexable types can have interfaces defined. There are two types of supported index signatures: `string` and `number`.
 
-  interface StringArray {
-    [index: number]: string;
-  }
+```
+interface StringArray {
+  [index: number]: string;
+}
+```
 
 Classes can also have interfaces to implement. Interfaces describe the public side of the class, rather 
 than both the public and private side.
 
-  interface ClockInterface {
-    currentTime: Date;
-  }
+```
+interface ClockInterface {
+  currentTime: Date;
+}
 
-  class Clock implements ClockInterface {
-    currentTime: Date = new Date();
-    constructor(h: number, m: number) { }
-  }
+class Clock implements ClockInterface {
+  currentTime: Date = new Date();
+  constructor(h: number, m: number) { }
+}
+```
 
 Interfaces can extend each other. Interfaces can extend Classes, but only extend the members of the class but not their implementation.
 
 ### Enumerated types
 Enums allow definition of a set of named constants.
 
-  enum Direction {
-    Up = 1, // value will auto-increment from initial, defaults to 0 if not set
-    Down,
-    Left,
-    Right,
-  }
+```
+enum Direction {
+  Up = 1, // value will auto-increment from initial, defaults to 0 if not set
+  Down,
+  Left,
+  Right,
+}
 
-  enum Direction { // no auto-incrementation for string enums
-    Up = "UP",
-    Down = "DOWN",
-    Left = "LEFT",
-    Right = "RIGHT",
-  }
+enum Direction { // no auto-incrementation for string enums
+  Up = "UP",
+  Down = "DOWN",
+  Left = "LEFT",
+  Right = "RIGHT",
+}
+```
 
 ### Generics
 Writing functions in terms of types to-be-specified-later that are then instantiated when needed for 
 specific types provided as parameters.
 
-  function identity<T>(arg: T): T {
-    return arg;
-  }
+```
+function identity<T>(arg: T): T {
+  return arg;
+}
+```
 
 ### Namespaces
-  Namespaces are simply named JavaScript objects in the global namespace, that can contain both code and declarations. Allows 
-  organizing types and avoiding collisions. 
+Namespaces are simply named JavaScript objects in the global namespace, that can contain both code and declarations. Allows 
+organizing types and avoiding collisions. 
 
-  In general, modules should be preferred unless specific use cases suggest using namespacing.
+In general, modules should be preferred unless specific use cases suggest using namespacing.
 
-  namespace Validation {
-    export interface StringValidator {
-      isAcceptable(s: string): boolean;
-    }
+```
+namespace Validation {
+  export interface StringValidator {
+    isAcceptable(s: string): boolean;
+  }
 
-    const lettersRegexp = /^[A-Za-z]+$/;
-    const numberRegexp = /^[0-9]+$/;
+  const lettersRegexp = /^[A-Za-z]+$/;
+  const numberRegexp = /^[0-9]+$/;
 
-    export class LettersOnlyValidator implements StringValidator {
-      isAcceptable(s: string) {
-        return lettersRegexp.test(s);
-      }
-    }
-
-    export class ZipCodeValidator implements StringValidator {
-      isAcceptable(s: string) {
-        return s.length === 5 && numberRegexp.test(s);
-      }
+  export class LettersOnlyValidator implements StringValidator {
+    isAcceptable(s: string) {
+      return lettersRegexp.test(s);
     }
   }
 
-### Tuples
-Tuple types allow you to express an array where the type of a fixed number of elements is known, but need not be the same.
-  
-  let x: [string, number];
-  x = ["hello", 10]; // OK
-  x = [10, "hello"]; // Error
-
+  export class ZipCodeValidator implements StringValidator {
+    isAcceptable(s: string) {
+      return s.length === 5 && numberRegexp.test(s);
+    }
+  }
+}
+```
 
 ## Featured Backported from ES6
 
@@ -231,12 +260,14 @@ This is useful particularly for third-party libraries, like D3.js and similar. I
 between a Typescript codebase and third-party libraries that are not written in Typescript. These files
 act as an interface to the components in the library.
 
-  declare namespace arithmetics {
-    add(left: number, right: number): number;
-    subtract(left: number, right: number): number;
-    multiply(left: number, right: number): number;
-    divide(left: number, right: number): number;
-  }
+```
+declare namespace arithmetics {
+  add(left: number, right: number): number;
+  subtract(left: number, right: number): number;
+  multiply(left: number, right: number): number;
+  divide(left: number, right: number): number;
+}
+```
   
 Large collections of declaration files for popular JavaScript libraries are hosted on GitHub in DefinitelyTyped.
  - https://github.com/DefinitelyTyped/DefinitelyTyped
@@ -268,5 +299,7 @@ Large collections of declaration files for popular JavaScript libraries are host
 ## Resources
  - https://www.typescriptlang.org
  - https://www.typescriptlang.org/play/index.html
+ - https://github.com/dzharii/awesome-typescript
  - https://www.hanselminutes.com/340/what-is-typescript-and-why-with-anders-hejlsberg
+ - https://www.youtube.com/watch?v=4xScMnaasG0
  - https://blog.logrocket.com/7-bad-excuses-for-not-using-typescript-dbf5e603a9a8/
